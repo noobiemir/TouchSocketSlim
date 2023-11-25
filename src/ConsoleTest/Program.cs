@@ -1,8 +1,7 @@
 ﻿using System.Text;
-using TouchSocketSlim.Core;
 using TouchSocketSlim.Sockets;
 
-var client = new TcpClient(new TcpClientConfig("127.0.0.1:61000", () => new FixedHeaderPackageAdapter { FixedHeaderType = FixedHeaderType.Byte }));
+var client = new TcpClient(new TcpClientConfig("127.0.0.1:61000"));
 
 client.Connected = (tcpClient, eventArgs) =>
 {

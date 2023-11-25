@@ -149,6 +149,7 @@ public class FixedHeaderPackageAdapter : SingleStreamDataHandlingAdapter
                 {
                     LastCacheTime = DateTime.Now;
                 }
+                return;
             }
 
             int packageLength;
