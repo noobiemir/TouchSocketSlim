@@ -10,7 +10,7 @@ public class TcpClientConfig
         RemoteIpHost = remoteIpHost ?? throw new ArgumentNullException(nameof(remoteIpHost));
     }
 
-    public TcpClientConfig(IpHost remoteIpHost) : this(remoteIpHost, () => new FixedHeaderPackageAdapter())
+    public TcpClientConfig(IpHost remoteIpHost) : this(remoteIpHost, () => new NormalDataHandlingAdapter())
     {
 
     }

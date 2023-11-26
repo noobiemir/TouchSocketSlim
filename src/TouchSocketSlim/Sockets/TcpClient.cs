@@ -19,7 +19,7 @@ using TouchSocketSlim.Core;
 namespace TouchSocketSlim.Sockets;
 
 [System.Diagnostics.DebuggerDisplay("{Ip}:{Port}")]
-public class TcpClient : DisposableObject
+public class TcpClient : DisposableObject, ITcpClient
 {
     private readonly TcpClientConfig _config;
     private volatile bool _online;
@@ -32,15 +32,13 @@ public class TcpClient : DisposableObject
         _config = config ?? throw new ArgumentNullException(nameof(config));
     }
 
-    public Protocol Protocol => Protocol.Tcp;
+    public ConnectedEventHandler<ITcpClient>? Connected { get; set; }
 
-    public ConnectedEventHandler<TcpClient>? Connected { get; set; }
+    public ConnectingEventHandler<ITcpClient>? Connecting { get; set; }
 
-    public ConnectingEventHandler<TcpClient>? Connecting { get; set; }
+    public DisconnectEventHandler<ITcpClientBase>? Disconnected { get; set; }
 
-    public DisconnectEventHandler<TcpClient>? Disconnected { get; set; }
-
-    public DisconnectEventHandler<TcpClient>? Disconnecting { get; set; }
+    public DisconnectEventHandler<ITcpClientBase>? Disconnecting { get; set; }
 
     public ReceivedEventHandler<TcpClient>? Received { get; set; }
 
@@ -64,7 +62,7 @@ public class TcpClient : DisposableObject
 
     public bool UseSsl => GetTcpCore().UseSsl;
 
-    public IpHost? RemoteIpHost { get; private set; }
+    public IpHost RemoteIpHost => _config.RemoteIpHost;
 
     public bool IsClient => true;
 

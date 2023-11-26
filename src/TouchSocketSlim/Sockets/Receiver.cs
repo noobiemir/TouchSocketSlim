@@ -9,13 +9,13 @@ public class Receiver : DisposableObject
         Dispose(false);
     }
 
-    private readonly TcpClient _client;
+    private readonly IClient _client;
     private readonly AutoResetEvent _resetEventForCompleteRead = new(false);
     private readonly AsyncAutoResetEvent _resetEventForRead = new(false);
     private ByteBlock? _byteBlock;
     private IRequestInfo? _requestInfo;
 
-    public Receiver(TcpClient client)
+    public Receiver(IClient client)
     {
         _client = client ?? throw new ArgumentNullException(nameof(client));
     }
