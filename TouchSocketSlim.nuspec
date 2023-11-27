@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+	<metadata>
+		<id>TouchSocketSlim</id>
+		<version>1.0.0</version>
+		<authors>noobie mir</authors>
+		<owners>noobie mir</owners>
+		<requireLicenseAcceptance>false</requireLicenseAcceptance>
+		<license type="expression">Apache-2.0</license>
+		<projectUrl>https://github.com/noobiemir/TouchSocketSlim</projectUrl>
+		<repository type="git" url="https://github.com/noobiemir/TouchSocketSlim" />
+		<description>TouchSocket Slim version</description>
+		<copyright>Copyright © 2023 noobiemir</copyright>
+		<language>en-US</language>
+		<tags>Socket,Tcp</tags>
+	</metadata>
+
+	<files>
+		<file src="./src/TouchSocketSlim/bin/$configuration$/netstandard2.1/SerilogSlim.dll" target="lib/netstandard2.1" />
+		<file src="./src/TouchSocketSlim/bin/$configuration$/net6.0/SerilogSlim.dll" target="lib/net6" />
+		<file src="./src/TouchSocketSlim/bin/$configuration$/net7.0/SerilogSlim.dll" target="lib/net7" />
+		<file src="./src/TouchSocketSlim/bin/$configuration$/net8.0/SerilogSlim.dll" target="lib/net8" />
+	</files>
+</package>

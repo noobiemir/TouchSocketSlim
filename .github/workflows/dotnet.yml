@@ -1,0 +1,64 @@
+name: deploy
+
+on: 
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'tag name'
+        required: true
+
+env:
+  RUNID: 613573412
+  DOTNET_NOLOGO: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  BUILD_PATH: '${{github.workspace}}/artifacts'
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Restore Dependencies
+      run: dotnet restore
+
+    - name: Build Solution
+      run: 'dotnet build --no-restore --configuration Release -p:Version="${{ github.event.inputs.tag_name }}" -p:InformationalVersion=""${{ github.event.inputs.tag_name }}"+${{github.sha}}"'
+
+    - name: Create Packages
+      if: success() && github.event_name != 'pull_request'
+      run: 'nuget pack ./TouchSocketSlim.nuspec -Version "${{ github.event.inputs.tag_name }}" -OutputDirectory "${{env.BUILD_PATH}}" -p Configuration=Release'
+
+    - name: Upload Packages
+      if: success() && github.event_name != 'pull_request'
+      uses: actions/upload-artifact@v3
+      with:
+        name: packages
+        path: '${{env.BUILD_PATH}}'
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+    - name: Download Artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: packages
+
+    - name: Publish Packages GitHub
+      run: |
+        for package in $(find -name "*.nupkg"); do
+          echo "${0##*/}": Pushing $package...
+          dotnet nuget push $package --source https://nuget.pkg.github.com/noobiemir/index.json --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
+        done
