@@ -25,7 +25,7 @@ public interface ISocketClientCollection
 
     bool SocketClientExist(string id);
 
-    bool TryGetSocketClient(string id, out ISocketClient client);
+    bool TryGetSocketClient(string id, out ISocketClient? client);
 
-    bool TryGetSocketClient<TClient>(string id, out TClient client) where TClient : ISocketClient;
+    bool TryGetSocketClient<TClient>(string id, out TClient? client) where TClient : ISocketClient;
 }

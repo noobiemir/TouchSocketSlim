@@ -2,5 +2,5 @@
 
 internal interface IPermitEventArgs
 {
-    bool IsPermitOperation { get; set; }
+    bool Accepted { get; set; }
 }

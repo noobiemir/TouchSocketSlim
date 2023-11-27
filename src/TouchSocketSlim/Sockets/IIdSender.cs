@@ -10,10 +10,6 @@ public interface IIdSender
 
     Task SendAsync(string id, byte[] buffer, int offset, int length);
 
-    void Send(string id, IRequestInfo requestInfo);
-
-    Task SendAsync(string id, IRequestInfo requestInfo);
-
     void Send(string id, IList<ArraySegment<byte>> transferBytes);
 
     Task SendAsync(string id, IList<ArraySegment<byte>> transferBytes);

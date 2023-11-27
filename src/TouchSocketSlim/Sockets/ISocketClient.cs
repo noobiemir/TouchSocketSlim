@@ -22,11 +22,11 @@ public interface ISocketClient : ITcpClientBase, IIdSender
 
     string Id { get; }
 
-    TcpServiceBase Service { get; }
+    TcpServiceBase? Service { get; }
 
-    string ServiceIp { get; }
+    string? ServiceIp { get; }
 
-    int ServicePort { get; }
+    int? ServicePort { get; }
 
-    TcpListenOption ListenOption { get; }
+    TcpListenOption? ListenOption { get; }
 }

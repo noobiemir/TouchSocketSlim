@@ -19,7 +19,14 @@ namespace TouchSocketSlim.Sockets;
 
 public abstract class TcpServiceBase : DisposableObject, IIdSender
 {
+    protected readonly TcpServiceConfig Config;
+
     private readonly ConcurrentStack<TcpCore> _tcpCores = new();
+
+    protected TcpServiceBase(TcpServiceConfig config)
+    {
+        Config = config ?? throw new ArgumentNullException(nameof(config));
+    }
 
     public abstract ISocketClientCollection SocketClients { get; }
 
@@ -28,8 +35,6 @@ public abstract class TcpServiceBase : DisposableObject, IIdSender
     public abstract int MaxCount { get; }
 
     public abstract IEnumerable<TcpNetworkMonitor> Monitors { get; }
-
-    public abstract string ServerName { get; }
 
     public abstract ServerState ServerState { get; }
 
@@ -51,7 +56,17 @@ public abstract class TcpServiceBase : DisposableObject, IIdSender
             return tcpCore;
         }
 
-        return new InternalTcpCore();
+        tcpCore = new InternalTcpCore();
+        if (Config.MinBufferSize.HasValue)
+        {
+            tcpCore.MinBufferSize = Config.MinBufferSize.Value;
+        }
+
+        if (Config.MaxBufferSize.HasValue)
+        {
+            tcpCore.MaxBufferSize = Config.MaxBufferSize.Value;
+        }
+        return tcpCore;
     }
 
     public abstract void ResetId(string oldId, string newId);
@@ -72,15 +87,15 @@ public abstract class TcpServiceBase : DisposableObject, IIdSender
 
     public abstract void Stop();
 
-    protected abstract void OnClientConnected(ISocketClient socketClient, ConnectedEventArgs e);
+    internal abstract void OnClientConnected(SocketClient socketClient, ConnectedEventArgs e);
 
-    protected abstract void OnClientConnecting(ISocketClient socketClient, ConnectedEventArgs e);
+    internal abstract void OnClientConnecting(SocketClient socketClient, ConnectingEventArgs e);
 
-    protected abstract void OnClientDisconnected(ISocketClient socketClient, DisconnectEventArgs e);
+    internal abstract void OnClientDisconnected(SocketClient socketClient, DisconnectEventArgs e);
 
-    protected abstract void OnClientDisconnecting(ISocketClient socketClient, DisconnectEventArgs e);
+    internal abstract void OnClientDisconnecting(SocketClient socketClient, DisconnectEventArgs e);
 
-    protected abstract void OnClientReceivedData(ISocketClient socketClient, ReceivedDataEventArgs e);
+    internal abstract void OnClientReceivedData(SocketClient socketClient, byte[] buffer, int offset, int length);
 
     protected override void Dispose(bool disposing)
     {
@@ -94,30 +109,14 @@ public abstract class TcpServiceBase : DisposableObject, IIdSender
     public void Send(string id, byte[] buffer, int offset, int length)
     {
         if (!SocketClients.TryGetSocketClient(id, out var client)) throw new InvalidOperationException($"Client not found :{id}");
-        client.Send(buffer, offset, length);
+        client!.Send(buffer, offset, length);
     }
 
     public Task SendAsync(string id, byte[] buffer, int offset, int length)
     {
         if (SocketClients.TryGetSocketClient(id, out var client))
         {
-            return client.SendAsync(buffer, offset, length);
-        }
-
-        throw new InvalidOperationException($"Client not found :{id}");
-    }
-
-    public void Send(string id, IRequestInfo requestInfo)
-    {
-        if (!SocketClients.TryGetSocketClient(id, out var client)) throw new InvalidOperationException($"Client not found :{id}");
-        client.Send(requestInfo);
-    }
-
-    public Task SendAsync(string id, IRequestInfo requestInfo)
-    {
-        if (SocketClients.TryGetSocketClient(id, out var client))
-        {
-            return client.SendAsync(requestInfo);
+            return client!.SendAsync(buffer, offset, length);
         }
 
         throw new InvalidOperationException($"Client not found :{id}");
@@ -126,14 +125,14 @@ public abstract class TcpServiceBase : DisposableObject, IIdSender
     public void Send(string id, IList<ArraySegment<byte>> transferBytes)
     {
         if (!SocketClients.TryGetSocketClient(id, out var client)) throw new InvalidOperationException($"Client not found :{id}");
-        client.Send(transferBytes);
+        client!.Send(transferBytes);
     }
 
     public Task SendAsync(string id, IList<ArraySegment<byte>> transferBytes)
     {
         if (SocketClients.TryGetSocketClient(id, out var client))
         {
-            return client.SendAsync(transferBytes);
+            return client!.SendAsync(transferBytes);
         }
 
         throw new InvalidOperationException($"Client not found :{id}");
@@ -142,14 +141,14 @@ public abstract class TcpServiceBase : DisposableObject, IIdSender
     public void Send(string id, ReadOnlySequence<byte> transferBytes)
     {
         if (!SocketClients.TryGetSocketClient(id, out var client)) throw new InvalidOperationException($"Client not found :{id}");
-        client.Send(transferBytes);
+        client!.Send(transferBytes);
     }
 
     public Task SendAsync(string id, ReadOnlySequence<byte> transferBytes)
     {
         if (SocketClients.TryGetSocketClient(id, out var client))
         {
-            return client.SendAsync(transferBytes);
+            return client!.SendAsync(transferBytes);
         }
 
         throw new InvalidOperationException($"Client not found :{id}");

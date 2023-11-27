@@ -9,7 +9,7 @@ public class TcpListenOption
         IpHost = ipHost ?? throw new ArgumentNullException(nameof(ipHost));
     }
 
-    public IpHost IpHost { get; set; }
+    public IpHost IpHost { get; }
 
     public int SendTimeout { get; set; }
 
@@ -24,5 +24,4 @@ public class TcpListenOption
     public bool UseSsl => ServiceSslOption is not null;
 
     public Func<SingleStreamDataHandlingAdapter> AdapterFactory { get; set; } = () => new NormalDataHandlingAdapter();
-
 }

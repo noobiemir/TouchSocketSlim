@@ -37,7 +37,7 @@ public interface ITcpClientBase : IClient, IDisposable
 
     bool UseSsl { get; }
 
-    void Close(string msg = "");
+    void Close(string message = "");
 
     void SetDataHandlingAdapter(SingleStreamDataHandlingAdapter adapter);
 
@@ -50,10 +50,6 @@ public interface ITcpClientBase : IClient, IDisposable
     void DefaultSend(byte[] buffer, int offset, int length);
 
     Task DefaultSendAsync(byte[] buffer, int offset, int length);
-
-    void Send(IRequestInfo requestInfo);
-
-    Task SendAsync(IRequestInfo requestInfo);
 
     void Send(IList<ArraySegment<byte>> transferBytes);
 

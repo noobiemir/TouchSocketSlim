@@ -9,12 +9,12 @@ public class ConnectingEventArgs : TouchSocketEventArgs, IPermitEventArgs
     {
         Id = id;
         Socket = socket;
-        IsPermitOperation = true;
+        Accepted = true;
     }
 
     public string? Id { get; set; }
 
-    public bool IsPermitOperation { get; set; }
+    public bool Accepted { get; set; }
 
     public Socket Socket { get; }
 }

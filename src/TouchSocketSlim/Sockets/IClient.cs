@@ -15,10 +15,6 @@ namespace TouchSocketSlim.Sockets;
 
 public interface IClient
 {
-    Receiver CreateReceiver();
-
-    void ClearReceiver();
-
     DateTime LastReceivedTime { get; }
 
     DateTime LastSendTime { get; }

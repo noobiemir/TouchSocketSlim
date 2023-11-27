@@ -113,7 +113,7 @@ public class FixedHeaderPackageAdapter : SingleStreamDataHandlingAdapter
         try
         {
             byteBlock.Position = 0;
-            GoReceived(byteBlock, null);
+            GoReceived(byteBlock);
         }
         finally
         {
@@ -211,11 +211,6 @@ public class FixedHeaderPackageAdapter : SingleStreamDataHandlingAdapter
         var agreementArray = ArrayPool<byte>.Shared.Rent(length);
         Buffer.BlockCopy(buffer, offset, agreementArray, 0, length);
         return new ReadOnlyMemory<byte>(agreementArray, 0, length);
-    }
-
-    protected override void PreviewSend(IRequestInfo requestInfo)
-    {
-        throw new NotSupportedException();
     }
 
     protected override void PreviewSend(byte[] buffer, int offset, int length)
@@ -389,11 +384,6 @@ public class FixedHeaderPackageAdapter : SingleStreamDataHandlingAdapter
         {
             byteBlock.Dispose();
         }
-    }
-
-    protected override Task PreviewSendAsync(IRequestInfo requestInfo)
-    {
-        throw new NotSupportedException();
     }
 
     protected override async Task PreviewSendAsync(byte[] buffer, int offset, int length)

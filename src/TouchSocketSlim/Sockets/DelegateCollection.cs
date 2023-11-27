@@ -6,4 +6,4 @@ public delegate void ConnectingEventHandler<in TClient>(TClient client, Connecti
 
 public delegate void DisconnectEventHandler<in TClient>(TClient client, DisconnectEventArgs e);
 
-public delegate void ReceivedEventHandler<in TClient>(TClient client, ReceivedDataEventArgs e);
+public delegate void ReceivedEventHandler<in TClient>(TClient client, byte[] buffer, int offset, int length);

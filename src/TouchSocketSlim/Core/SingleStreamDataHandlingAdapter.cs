@@ -8,7 +8,7 @@ public abstract class SingleStreamDataHandlingAdapter : DataHandlingAdapter
 
     public bool CacheTimeoutEnable { get; set; } = false;
 
-    public Action<ByteBlock, IRequestInfo?>? ReceivedCallBack { get; set; }
+    public Action<ByteBlock>? ReceivedCallBack { get; set; }
 
     public Action<byte[], int, int>? SendCallBack { get; set; }
 
@@ -36,11 +36,6 @@ public abstract class SingleStreamDataHandlingAdapter : DataHandlingAdapter
         }
     }
 
-    public void SendInput(IRequestInfo requestInfo)
-    {
-        PreviewSend(requestInfo);
-    }
-
     public void SendInput(byte[] buffer, int offset, int length)
     {
         PreviewSend(buffer, offset, length);
@@ -61,10 +56,6 @@ public abstract class SingleStreamDataHandlingAdapter : DataHandlingAdapter
         throw new NotImplementedException();
     }
 
-    protected virtual void PreviewSend(IRequestInfo requestInfo)
-    {
-        throw new NotImplementedException();
-    }
     protected virtual void PreviewSend(ReadOnlySequence<byte> transferBytes)
     {
         throw new NotImplementedException();
@@ -73,11 +64,6 @@ public abstract class SingleStreamDataHandlingAdapter : DataHandlingAdapter
     protected virtual void PreviewSend(byte[] buffer, int offset, int length)
     {
         GoSend(buffer, offset, length);
-    }
-
-    protected virtual Task PreviewSendAsync(IRequestInfo requestInfo)
-    {
-        throw new NotImplementedException();
     }
 
     protected virtual Task PreviewSendAsync(byte[] buffer, int offset, int length)
@@ -95,9 +81,9 @@ public abstract class SingleStreamDataHandlingAdapter : DataHandlingAdapter
         throw new NotImplementedException();
     }
 
-    protected void GoReceived(ByteBlock byteBlock, IRequestInfo? requestInfo)
+    protected void GoReceived(ByteBlock byteBlock)
     {
-        ReceivedCallBack?.Invoke(byteBlock, requestInfo);
+        ReceivedCallBack?.Invoke(byteBlock);
     }
 
     protected void GoSend(byte[] buffer, int offset, int length)
@@ -115,11 +101,6 @@ public abstract class SingleStreamDataHandlingAdapter : DataHandlingAdapter
     protected override void Reset()
     {
         LastCacheTime = DateTime.Now;
-    }
-
-    public Task SendInputAsync(IRequestInfo requestInfo)
-    {
-        return PreviewSendAsync(requestInfo);
     }
 
     public Task SendInputAsync(byte[] buffer, int offset, int length)

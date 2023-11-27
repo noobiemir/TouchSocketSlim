@@ -25,7 +25,14 @@ public class TcpClient : DisposableObject, ITcpClient
     private volatile bool _online;
     private readonly SemaphoreSlim _semaphore = new(1, 1);
     private readonly InternalTcpCore _tcpCore = new();
-    private Receiver? _receiver;
+
+    public TcpClient(IpHost remoteIpHost, Func<SingleStreamDataHandlingAdapter> dataHandlingAdapterFactory) : this(new TcpClientConfig(remoteIpHost, dataHandlingAdapterFactory))
+    {
+    }
+
+    public TcpClient(IpHost remoteIpHost) : this(new TcpClientConfig(remoteIpHost))
+    {
+    }
 
     public TcpClient(TcpClientConfig config)
     {
@@ -106,17 +113,9 @@ public class TcpClient : DisposableObject, ITcpClient
         DataHandlingAdapter = adapter;
     }
 
-    private void PrivateHandleReceivedData(ByteBlock byteBlock, IRequestInfo? requestInfo)
+    private void PrivateHandleReceivedData(ByteBlock byteBlock)
     {
-        if (_receiver != null)
-        {
-            if (_receiver.TryInputReceive(byteBlock, requestInfo))
-            {
-                return;
-            }
-        }
-
-        ReceivedData(new ReceivedDataEventArgs(byteBlock, requestInfo));
+        ReceivedData(byteBlock.Buffer, 0, (int)byteBlock.Length);
     }
 
     public void DefaultSend(byte[] buffer, int offset, int length)
@@ -135,20 +134,14 @@ public class TcpClient : DisposableObject, ITcpClient
         return _tcpCore ?? throw new ObjectDisposedException(GetType().Name);
     }
 
-    protected virtual void ReceivedData(ReceivedDataEventArgs e)
+    protected virtual void ReceivedData(byte[] buffer, int offset, int length)
     {
-        Received?.Invoke(this, e);
+        Received?.Invoke(this, buffer, offset, length);
     }
 
     protected virtual void OnConnecting(ConnectingEventArgs e)
     {
         Connecting?.Invoke(this, e);
-    }
-
-    private void PrivateOnDisconnected(DisconnectEventArgs e)
-    {
-        _receiver?.TryInputReceive(null, null);
-        OnDisconnected(e);
     }
 
     protected virtual void OnDisconnected(DisconnectEventArgs e)
@@ -188,7 +181,7 @@ public class TcpClient : DisposableObject, ITcpClient
                 _online = false;
                 MainSocket.SafeDispose();
                 DataHandlingAdapter.SafeDispose();
-                PrivateOnDisconnected(new DisconnectEventArgs(manual, message));
+                OnDisconnected(new DisconnectEventArgs(manual, message));
             }
         }
     }
@@ -426,43 +419,9 @@ public class TcpClient : DisposableObject, ITcpClient
         return TcpConnectAsync(timeout, cancellationToken);
     }
 
-    public Receiver CreateReceiver()
-    {
-        return _receiver ??= new Receiver(this);
-    }
-
-    public void ClearReceiver()
-    {
-        _receiver = null;
-    }
-
-    public void Send(IRequestInfo requestInfo)
-    {
-        if (IsDisposed)
-        {
-            return;
-        }
-
-        if (DataHandlingAdapter == null)
-        {
-            throw new InvalidOperationException($"{nameof(DataHandlingAdapter)} is null");
-        }
-
-        if (!DataHandlingAdapter.CanSendRequestInfo)
-        {
-            throw new NotSupportedException("The current adapter does not support IRequestInfo sending");
-        }
-
-        DataHandlingAdapter.SendInput(requestInfo);
-    }
-
     public virtual void Send(byte[] buffer, int offset, int length)
     {
-        if (IsDisposed)
-        {
-            return;
-        }
-
+        ThrowIfDisposed();
         if (DataHandlingAdapter == null)
         {
             throw new InvalidOperationException($"{nameof(DataHandlingAdapter)} is null");
@@ -473,11 +432,7 @@ public class TcpClient : DisposableObject, ITcpClient
 
     public virtual void Send(IList<ArraySegment<byte>> transferBytes)
     {
-        if (IsDisposed)
-        {
-            return;
-        }
-
+        ThrowIfDisposed();
         if (DataHandlingAdapter == null)
         {
             throw new InvalidOperationException($"{nameof(DataHandlingAdapter)} is null");
@@ -501,11 +456,7 @@ public class TcpClient : DisposableObject, ITcpClient
 
     public virtual void Send(ReadOnlySequence<byte> sequence)
     {
-        if (IsDisposed)
-        {
-            return;
-        }
-
+        ThrowIfDisposed();
         if (DataHandlingAdapter == null)
         {
             throw new InvalidOperationException($"{nameof(DataHandlingAdapter)} is null");
@@ -534,22 +485,6 @@ public class TcpClient : DisposableObject, ITcpClient
 
         return DataHandlingAdapter.SendInputAsync(buffer, offset, length);
     }
-    public virtual Task SendAsync(IRequestInfo requestInfo)
-    {
-        ThrowIfDisposed();
-        if (DataHandlingAdapter == null)
-        {
-            throw new InvalidOperationException($"{nameof(DataHandlingAdapter)} is null");
-        }
-
-        if (!DataHandlingAdapter.CanSendRequestInfo)
-        {
-            throw new NotSupportedException("The current adapter does not support IRequestInfo sending");
-        }
-
-        return DataHandlingAdapter.SendInputAsync(requestInfo);
-    }
-
 
     public virtual async Task SendAsync(IList<ArraySegment<byte>> transferBytes)
     {
@@ -594,6 +529,4 @@ public class TcpClient : DisposableObject, ITcpClient
             await DataHandlingAdapter.SendInputAsync(byteBlock.Buffer, 0, (int)byteBlock.Length);
         }
     }
-
-
 }
