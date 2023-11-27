@@ -1,0 +1,15 @@
+{
+	"name": "com.noobiesgs.touchsocket.slim",
+	"displayName": "touchsocket slim version",
+	"description": "touchsocket slim version.",
+	"version": "1.0.0",
+	"unity": "2018.3",
+	"author": {
+		"name": "noobiesgs"
+	},
+	"dependencies": {
+	},
+	"keywords": [
+		"socket"
+	]
+}
