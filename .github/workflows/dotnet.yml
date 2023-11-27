@@ -30,10 +30,10 @@ jobs:
         dotnet-version: 8.0.x
 
     - name: Restore Dependencies
-      run: dotnet restore
+      run: dotnet restore ./src/TouchSocketSlim/TouchSocketSlim.csproj
 
     - name: Build Solution
-      run: 'dotnet build --no-restore --configuration Release -p:Version="${{ github.event.inputs.tag_name }}" -p:InformationalVersion=""${{ github.event.inputs.tag_name }}"+${{github.sha}}"'
+      run: 'dotnet build ./src/TouchSocketSlim/TouchSocketSlim.csproj --no-restore --configuration Release -p:Version="${{ github.event.inputs.tag_name }}" -p:InformationalVersion=""${{ github.event.inputs.tag_name }}"+${{github.sha}}"'
 
     - name: Create Packages
       if: success() && github.event_name != 'pull_request'
