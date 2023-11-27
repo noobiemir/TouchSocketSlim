@@ -9,7 +9,7 @@ using TouchSocketSlim.Core;
 namespace TouchSocketSlim.Sockets
 {
 
-    public class TcpService : TcpServiceBase
+    public class TcpService<TSocketClient> : TcpServiceBase where TSocketClient : SocketClient, new()
     {
         private readonly Func<string> _getDefaultNewId;
         private long _nextId;
@@ -53,43 +53,43 @@ namespace TouchSocketSlim.Sockets
             return GetDefaultNewId();
         }
 
-        public ReceivedEventHandler<SocketClient>? Received { get; set; }
+        public ReceivedEventHandler<TSocketClient>? Received { get; set; }
 
-        public ConnectedEventHandler<SocketClient>? Connected { get; set; }
+        public ConnectedEventHandler<TSocketClient>? Connected { get; set; }
 
-        public ConnectingEventHandler<SocketClient>? Connecting { get; set; }
+        public ConnectingEventHandler<TSocketClient>? Connecting { get; set; }
 
-        public DisconnectEventHandler<SocketClient>? Disconnected { get; set; }
+        public DisconnectEventHandler<TSocketClient>? Disconnected { get; set; }
 
-        public DisconnectEventHandler<SocketClient>? Disconnecting { get; set; }
+        public DisconnectEventHandler<TSocketClient>? Disconnecting { get; set; }
 
 
         internal override void OnClientConnected(SocketClient socketClient, ConnectedEventArgs e)
         {
-            Connected?.Invoke(socketClient, e);
+            Connected?.Invoke((TSocketClient)socketClient, e);
         }
 
         internal override void OnClientConnecting(SocketClient socketClient, ConnectingEventArgs e)
         {
-            Connecting?.Invoke(socketClient, e);
+            Connecting?.Invoke((TSocketClient)socketClient, e);
         }
 
         internal override void OnClientDisconnected(SocketClient socketClient, DisconnectEventArgs e)
         {
-            Disconnected?.Invoke(socketClient, e);
+            Disconnected?.Invoke((TSocketClient)socketClient, e);
         }
 
         internal override void OnClientDisconnecting(SocketClient socketClient, DisconnectEventArgs e)
         {
-            Disconnecting?.Invoke(socketClient, e);
+            Disconnecting?.Invoke((TSocketClient)socketClient, e);
         }
 
         internal override void OnClientReceivedData(SocketClient socketClient, byte[] buffer, int offset, int length)
         {
-            OnReceived(socketClient, buffer, offset, length);
+            OnReceived((TSocketClient)socketClient, buffer, offset, length);
         }
 
-        protected virtual void OnReceived(SocketClient socketClient, byte[] buffer, int offset, int length)
+        protected virtual void OnReceived(TSocketClient socketClient, byte[] buffer, int offset, int length)
         {
             Received?.Invoke(socketClient, buffer, offset, length);
         }
@@ -168,6 +168,11 @@ namespace TouchSocketSlim.Sockets
             }
         }
 
+        protected virtual TSocketClient CreateSocketClient()
+        {
+            return new TSocketClient();
+        }
+
         private async Task OnClientSocketInitAsync(Socket socket, TcpNetworkMonitor monitor)
         {
             try
@@ -179,7 +184,7 @@ namespace TouchSocketSlim.Sockets
 
                 socket.SendTimeout = monitor.Option.SendTimeout;
 
-                var client = new SocketClient();
+                var client = CreateSocketClient();
                 client.Service = this;
                 client.ListenOption = monitor.Option;
                 client.SetSocket(socket);
@@ -264,12 +269,12 @@ namespace TouchSocketSlim.Sockets
             }
         }
 
-        public IEnumerable<SocketClient> GetClients()
+        public IEnumerable<TSocketClient> GetClients()
         {
-            return _socketClients.GetClients().Cast<SocketClient>();
+            return _socketClients.GetClients().Cast<TSocketClient>();
         }
 
-        public bool TryGetSocketClient(string id, out SocketClient? socketClient)
+        public bool TryGetSocketClient(string id, out TSocketClient? socketClient)
         {
             return _socketClients.TryGetSocketClient(id, out socketClient);
         }
@@ -408,5 +413,10 @@ namespace TouchSocketSlim.Sockets
             }
             base.Dispose(disposing);
         }
+    }
+
+    public class TcpService : TcpService<SocketClient>
+    {
+
     }
 }
