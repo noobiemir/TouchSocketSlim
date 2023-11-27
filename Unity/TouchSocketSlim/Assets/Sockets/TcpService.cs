@@ -417,6 +417,18 @@ namespace TouchSocketSlim.Sockets
 
     public class TcpService : TcpService<SocketClient>
     {
+        public TcpService(Func<SingleStreamDataHandlingAdapter> adapterFactory, params IpHost[] listenIpHosts) : base(adapterFactory, listenIpHosts)
+        {
 
+        }
+
+        public TcpService(params IpHost[] listenIpHosts) : base(listenIpHosts)
+        {
+
+        }
+
+        public TcpService(TcpServiceConfig config) : base(config)
+        {
+        }
     }
 }
