@@ -9,7 +9,7 @@ using TouchSocketSlim.Core;
 namespace TouchSocketSlim.Sockets
 {
 
-    public class TcpService<TSocketClient> : TcpServiceBase where TSocketClient : SocketClient, new()
+    public abstract class TcpService<TSocketClient> : TcpServiceBase where TSocketClient : SocketClient
     {
         private readonly Func<string> _getDefaultNewId;
         private long _nextId;
@@ -168,10 +168,7 @@ namespace TouchSocketSlim.Sockets
             }
         }
 
-        protected virtual TSocketClient CreateSocketClient()
-        {
-            return new TSocketClient();
-        }
+        protected abstract TSocketClient CreateSocketClient();
 
         private async Task OnClientSocketInitAsync(Socket socket, TcpNetworkMonitor monitor)
         {
@@ -429,6 +426,11 @@ namespace TouchSocketSlim.Sockets
 
         public TcpService(TcpServiceConfig config) : base(config)
         {
+        }
+
+        protected override SocketClient CreateSocketClient()
+        {
+            return new SocketClient();
         }
     }
 }
